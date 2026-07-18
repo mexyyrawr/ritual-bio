@@ -1,0 +1,248 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useAccount, useConnect, useDisconnect, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { RITUAL_BIO_ADDRESS, RITUAL_BIO_ABI } from "@/lib/contract";
+import Link from "next/link";
+
+export function BioEditor() {
+  const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
+
+  const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
+  const [links, setLinks] = useState<string[]>([""]);
+  const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  // Read existing profile
+  const { data: profile, refetch } = useReadContract({
+    address: RITUAL_BIO_ADDRESS,
+    abi: RITUAL_BIO_ABI,
+    functionName: "getProfile",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
+
+  // Load existing profile into form
+  useEffect(() => {
+    if (profile) {
+      const [pName, pBio, pLinks] = profile;
+      if (pName) {
+        setName(pName);
+        setBio(pBio);
+        setLinks(pLinks.length > 0 ? [...pLinks] : [""]);
+      }
+    }
+  }, [profile]);
+
+  // Write contract
+  const { writeContract, data: txHash } = useWriteContract();
+
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  useEffect(() => {
+    if (isSuccess) {
+      setStatus("success");
+      refetch();
+      setTimeout(() => setStatus("idle"), 3000);
+    }
+  }, [isSuccess, refetch]);
+
+  const handleSave = () => {
+    if (!name.trim()) {
+      setErrorMsg("Name required");
+      return;
+    }
+
+    setStatus("saving");
+    setErrorMsg("");
+
+    const cleanLinks = links.filter((l) => l.trim().length > 0);
+
+    writeContract(
+      {
+        address: RITUAL_BIO_ADDRESS,
+        abi: RITUAL_BIO_ABI,
+        functionName: "setProfile",
+        args: [name.trim(), bio.trim(), cleanLinks],
+      },
+      {
+        onError: (err) => {
+          setStatus("error");
+          setErrorMsg(err.message.slice(0, 200));
+        },
+      }
+    );
+  };
+
+  const addLink = () => {
+    if (links.length < 20) setLinks([...links, ""]);
+  };
+
+  const removeLink = (index: number) => {
+    if (links.length > 1) {
+      setLinks(links.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateLink = (index: number, value: string) => {
+    const newLinks = [...links];
+    newLinks[index] = value;
+    setLinks(newLinks);
+  };
+
+  // Not connected
+  if (!isConnected) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-4">
+        <div className="text-6xl mb-2">🔗</div>
+        <h1 className="text-3xl font-bold text-white">Ritual Bio</h1>
+        <p className="text-gray-400 text-center max-w-md">
+          On-chain profile / Linktree untuk Ritual Chain. Satu link untuk semua socials lo.
+        </p>
+        <button
+          onClick={() => connect({ connector: connectors[0] })}
+          className="px-8 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition-colors"
+        >
+          Connect Wallet
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-xl mx-auto p-4 sm:p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-white">
+          🔗 Ritual Bio
+        </h1>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/${address}`}
+            className="text-xs text-purple-400 hover:text-purple-300"
+          >
+            View Public Profile →
+          </Link>
+          <button
+            onClick={() => disconnect()}
+            className="text-xs text-gray-500 hover:text-gray-300 bg-gray-800 px-3 py-1 rounded"
+          >
+            {address?.slice(0, 6)}...{address?.slice(-4)}
+          </button>
+        </div>
+      </div>
+
+      {/* Form */}
+      <div className="space-y-4">
+        {/* Name */}
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Your name"
+            maxLength={64}
+            className="w-full p-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors"
+          />
+        </div>
+
+        {/* Bio */}
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">Bio</label>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Tell the world about yourself..."
+            maxLength={500}
+            rows={3}
+            className="w-full p-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors resize-none"
+          />
+          <p className="text-xs text-gray-600 mt-1">{bio.length}/500</p>
+        </div>
+
+        {/* Links */}
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">
+            Links ({links.length}/20)
+          </label>
+          <div className="space-y-2">
+            {links.map((link, i) => (
+              <div key={i} className="flex gap-2">
+                <input
+                  type="url"
+                  value={link}
+                  onChange={(e) => updateLink(i, e.target.value)}
+                  placeholder="https://..."
+                  maxLength={500}
+                  className="flex-1 p-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors"
+                />
+                {links.length > 1 && (
+                  <button
+                    onClick={() => removeLink(i)}
+                    className="px-3 bg-red-900/30 hover:bg-red-900/50 rounded-lg text-red-400 transition-colors"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          {links.length < 20 && (
+            <button
+              onClick={addLink}
+              className="mt-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+            >
+              + Add Link
+            </button>
+          )}
+        </div>
+
+        {/* Save Button */}
+        <button
+          onClick={handleSave}
+          disabled={status === "saving" || isConfirming || !name.trim()}
+          className="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {status === "saving" || isConfirming
+            ? "⏳ Saving on-chain..."
+            : status === "success"
+              ? "✅ Saved!"
+              : "💾 Save Profile"}
+        </button>
+
+        {/* Error */}
+        {errorMsg && (
+          <div className="p-3 bg-red-900/20 border border-red-700/50 rounded-lg">
+            <p className="text-red-400 text-sm">❌ {errorMsg}</p>
+          </div>
+        )}
+
+        {/* Tx Hash */}
+        {txHash && (
+          <p className="text-xs text-gray-600 text-center">
+            Tx:{" "}
+            <a
+              href={`https://explorer.ritualfoundation.org/tx/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300"
+            >
+              {txHash.slice(0, 18)}...
+            </a>
+          </p>
+        )}
+      </div>
+
+      {/* Disclaimer */}
+      <p className="text-xs text-gray-700 mt-8 text-center">
+        ⚠️ Data disimpan on-chain di Ritual Chain. Gak bisa dihapus tanpa deleteProfile().
+      </p>
+    </div>
+  );
+}
