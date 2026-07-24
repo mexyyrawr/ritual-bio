@@ -10,6 +10,7 @@ export const RITUAL_BIO_ABI = [
     inputs: [
       { name: "name", type: "string" },
       { name: "bio", type: "string" },
+      { name: "avatarUrl", type: "string" },
       { name: "links", type: "string[]" },
     ],
     outputs: [],
@@ -22,6 +23,7 @@ export const RITUAL_BIO_ABI = [
     outputs: [
       { name: "name", type: "string" },
       { name: "bio", type: "string" },
+      { name: "avatarUrl", type: "string" },
       { name: "links", type: "string[]" },
       { name: "updatedAt", type: "uint256" },
     ],

@@ -10,6 +10,7 @@ contract RitualBio {
     struct Profile {
         string name;
         string bio;
+        string avatarUrl;
         string[] links;
         uint256 updatedAt;
     }
@@ -27,11 +28,13 @@ contract RitualBio {
     function setProfile(
         string calldata name,
         string calldata bio,
+        string calldata avatarUrl,
         string[] calldata links
     ) external {
         require(bytes(name).length > 0, "Name required");
         require(bytes(name).length <= 64, "Name too long");
         require(bytes(bio).length <= 500, "Bio too long");
+        require(bytes(avatarUrl).length <= 500, "Avatar URL too long");
         require(links.length <= 20, "Max 20 links");
 
         // Validate link lengths
@@ -42,6 +45,7 @@ contract RitualBio {
         _profiles[msg.sender] = Profile({
             name: name,
             bio: bio,
+            avatarUrl: avatarUrl,
             links: links,
             updatedAt: block.timestamp
         });
@@ -54,6 +58,7 @@ contract RitualBio {
      * @param user Address to look up
      * @return name Display name
      * @return bio Short bio
+     * @return avatarUrl Avatar image URL
      * @return links Array of URLs
      * @return updatedAt Last update timestamp
      */
@@ -63,12 +68,13 @@ contract RitualBio {
         returns (
             string memory name,
             string memory bio,
+            string memory avatarUrl,
             string[] memory links,
             uint256 updatedAt
         )
     {
         Profile storage p = _profiles[user];
-        return (p.name, p.bio, p.links, p.updatedAt);
+        return (p.name, p.bio, p.avatarUrl, p.links, p.updatedAt);
     }
 
     /**

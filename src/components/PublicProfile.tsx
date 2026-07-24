@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useReadContract } from "wagmi";
 import { RITUAL_BIO_ADDRESS, RITUAL_BIO_ABI } from "@/lib/contract";
+import { getLinkIconComponent, getLinkLabel, RitualLogo } from "@/components/LinkIcons";
 import Link from "next/link";
 
 interface PublicProfileProps {
@@ -15,6 +17,15 @@ export function PublicProfile({ address }: PublicProfileProps) {
     functionName: "getProfile",
     args: [address],
   });
+
+  const [copied, setCopied] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(`https://ritual-bio.vercel.app/${address}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   if (isLoading) {
     return (
@@ -42,21 +53,9 @@ export function PublicProfile({ address }: PublicProfileProps) {
     );
   }
 
-  const [name, bio, links, updatedAt] = profile;
+  const [name, bio, avatarUrl, links, updatedAt] = profile as [string, string, string, string[], bigint];
   const date = new Date(Number(updatedAt) * 1000);
-
-  // Link icons based on domain
-  const getLinkIcon = (url: string) => {
-    if (url.includes("twitter.com") || url.includes("x.com")) return "🐦";
-    if (url.includes("github.com")) return "💻";
-    if (url.includes("discord")) return "💬";
-    if (url.includes("telegram") || url.includes("t.me")) return "📱";
-    if (url.includes("medium.com")) return "📝";
-    if (url.includes("youtube.com")) return "🎥";
-    if (url.includes("linkedin.com")) return "💼";
-    if (url.includes("instagram.com")) return "📸";
-    return "🔗";
-  };
+  const showAvatar = avatarUrl && !imgError;
 
   return (
     <div className="max-w-md mx-auto p-4 sm:p-6">
@@ -70,12 +69,21 @@ export function PublicProfile({ address }: PublicProfileProps) {
 
       {/* Profile Card */}
       <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-6 text-center">
-        {/* Avatar placeholder */}
-        <div className="w-20 h-20 rounded-full bg-purple-600/20 border-2 border-purple-500/30 flex items-center justify-center mx-auto mb-4">
-          <span className="text-3xl">
-            {name.charAt(0).toUpperCase()}
-          </span>
-        </div>
+        {/* Avatar */}
+        {showAvatar ? (
+          <img
+            src={avatarUrl}
+            alt={name}
+            className="w-20 h-20 rounded-full object-cover border-2 border-purple-500/30 mx-auto mb-4"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="w-20 h-20 rounded-full bg-purple-600/20 border-2 border-purple-500/30 flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl text-purple-300">
+              {name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
 
         {/* Name */}
         <h1 className="text-2xl font-bold text-white mb-2">{name}</h1>
@@ -92,26 +100,35 @@ export function PublicProfile({ address }: PublicProfileProps) {
           </p>
         )}
 
-        {/* Links */}
+        {/* Links with real SVG logos */}
         {links.length > 0 && (
           <div className="space-y-3">
-            {links.map((link, i) => (
-              <a
-                key={i}
-                href={link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors group"
-              >
-                <span className="text-lg">{getLinkIcon(link)}</span>
-                <span className="text-sm text-gray-300 group-hover:text-white truncate flex-1">
-                  {link.replace(/^https?:\/\/(www\.)?/, "").slice(0, 40)}
-                </span>
-                <span className="text-gray-500 group-hover:text-gray-300 text-xs">
-                  ↗
-                </span>
-              </a>
-            ))}
+            {links.map((link, i) => {
+              const IconComponent = getLinkIconComponent(link);
+              const label = getLinkLabel(link);
+              return (
+                <a
+                  key={i}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors group"
+                >
+                  <div className="shrink-0 w-8 h-8 bg-gray-600/50 rounded-md flex items-center justify-center text-gray-300 group-hover:text-white transition-colors">
+                    <IconComponent className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-xs text-gray-500">{label}</p>
+                    <p className="text-sm text-gray-300 group-hover:text-white truncate transition-colors">
+                      {link.replace(/^https?:\/\/(www\.)?/, "").slice(0, 40)}
+                    </p>
+                  </div>
+                  <span className="text-gray-500 group-hover:text-gray-300 text-xs shrink-0">
+                    ↗
+                  </span>
+                </a>
+              );
+            })}
           </div>
         )}
 
@@ -121,8 +138,25 @@ export function PublicProfile({ address }: PublicProfileProps) {
         </p>
       </div>
 
-      {/* Footer */}
-      <div className="text-center mt-6">
+      {/* Copy Link */}
+      <div className="mt-4 flex items-center gap-2">
+        <div className="flex-1 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 text-sm text-gray-400 font-mono truncate">
+          ritual-bio.vercel.app/{address.slice(0, 6)}...{address.slice(-4)}
+        </div>
+        <button
+          onClick={copyLink}
+          className="px-4 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-sm font-medium transition-colors shrink-0"
+        >
+          {copied ? "✓" : "Copy"}
+        </button>
+      </div>
+      <p className="text-xs text-gray-600 mt-1 text-center">
+        Tempel link ini di bio social media lo 🔗
+      </p>
+
+      {/* Footer with Ritual logo */}
+      <div className="text-center mt-8 flex items-center justify-center gap-2">
+        <RitualLogo className="w-5 h-5" />
         <p className="text-xs text-gray-700">
           Powered by{" "}
           <span className="text-purple-400">Ritual Bio</span>
