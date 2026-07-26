@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAccount, useConnect, useDisconnect, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { RITUAL_BIO_ADDRESS, RITUAL_BIO_ABI } from "@/lib/contract";
-import { getLinkIconComponent, getLinkLabel, GlobeLogo } from "@/components/LinkIcons";
+import { getLinkIconComponent, getLinkLabel, RitualLogo } from "@/components/LinkIcons";
+import { uploadImage } from "@/lib/upload";
 import Link from "next/link";
 
 export function BioEditor() {
@@ -14,6 +15,9 @@ export function BioEditor() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [links, setLinks] = useState<string[]>([""]);
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -107,6 +111,23 @@ export function BioEditor() {
     }
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError("");
+    try {
+      const url = await uploadImage(file);
+      setAvatarUrl(url);
+    } catch (err: any) {
+      setUploadError(err?.message?.slice(0, 120) || "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   // Not connected
   if (!isConnected) {
     return (
@@ -130,7 +151,8 @@ export function BioEditor() {
     <div className="max-w-xl mx-auto p-4 sm:p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-white">
+        <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+          <RitualLogo className="w-7 h-7" />
           🔗 Ritual Bio
         </h1>
         <div className="flex items-center gap-3">
@@ -169,7 +191,7 @@ export function BioEditor() {
       <div className="space-y-4">
         {/* Avatar */}
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Avatar URL</label>
+          <label className="block text-sm text-gray-400 mb-1">Profile Photo</label>
           <div className="flex gap-3 items-start">
             {avatarUrl ? (
               <img
@@ -184,15 +206,46 @@ export function BioEditor() {
               </div>
             )}
             <div className="flex-1">
+              <div className="flex gap-2 mb-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {uploading ? "⏳ Uploading..." : "📁 Upload Photo"}
+                </button>
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setAvatarUrl("")}
+                    className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-gray-300 text-sm transition-colors"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
               <input
                 type="url"
                 value={avatarUrl}
                 onChange={(e) => setAvatarUrl(e.target.value)}
-                placeholder="https://example.com/avatar.jpg"
+                placeholder="Or paste image URL"
                 maxLength={500}
                 className="w-full p-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors text-sm"
               />
-              <p className="text-xs text-gray-600 mt-1">Paste image URL — shows on your public profile</p>
+              <p className="text-xs text-gray-600 mt-1">
+                {uploading ? "Uploading to IPFS..." : "Upload from device or paste a URL"}
+              </p>
+              {uploadError && (
+                <p className="text-xs text-red-400 mt-1">❌ {uploadError}</p>
+              )}
             </div>
           </div>
         </div>
@@ -231,7 +284,7 @@ export function BioEditor() {
           </label>
           <div className="space-y-2">
             {links.map((link, i) => {
-              const IconComponent = link ? getLinkIconComponent(link) : GlobeLogo;
+              const IconComponent = link ? getLinkIconComponent(link) : RitualLogo;
               return (
                 <div key={i} className="flex gap-2 items-center">
                   <div className="shrink-0 w-10 h-10 bg-gray-800 rounded-lg border border-gray-700 flex items-center justify-center text-gray-400">

@@ -100,7 +100,7 @@ export function getLinkIconComponent(url: string) {
   if (url.includes("linkedin.com")) return LinkedInLogo;
   if (url.includes("instagram.com")) return InstagramLogo;
   if (url.includes("facebook.com") || url.includes("fb.com")) return FacebookLogo;
-  return GlobeLogo;
+  return RitualLogo;
 }
 
 export function getLinkLabel(url: string): string {
