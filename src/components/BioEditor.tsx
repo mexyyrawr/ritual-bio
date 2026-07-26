@@ -132,7 +132,7 @@ export function BioEditor() {
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-4">
-        <div className="text-6xl mb-2">🔗</div>
+        <div className="mb-6"><RitualLogo className="w-16 h-16 mx-auto" /></div>
         <h1 className="text-3xl font-bold text-white">Ritual Bio</h1>
         <p className="text-gray-400 text-center max-w-md">
           On-chain profile / Linktree untuk Ritual Chain. Satu link untuk semua socials lo.
@@ -153,7 +153,7 @@ export function BioEditor() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
           <RitualLogo className="w-7 h-7" />
-          🔗 Ritual Bio
+          Ritual Bio
         </h1>
         <div className="flex items-center gap-3">
           <Link

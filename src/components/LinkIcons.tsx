@@ -77,27 +77,33 @@ export function GlobeLogo({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
-// Ritual logo — green geometric interlocking endless knot
+// Ritual logo — endless knot / interlocking chain pattern
 export function RitualLogo({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M50 8 L58 20 L70 14 L64 26 L76 34 L62 36 L60 50 L48 42 L36 50 L34 36 L20 34 L32 26 L26 14 L38 20 L46 8 L50 8Z"
-        fill="#22c55e"
+    <svg className={className} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Outer ring - interlocking chain */}
+      <path 
+        d="M32 8 C18 8 8 18 8 32 C8 46 18 56 32 56 C46 56 56 46 56 32" 
+        stroke="#22c55e" 
+        strokeWidth="6" 
+        strokeLinecap="round"
+        fill="none"
       />
-      <path
-        d="M50 92 L42 80 L30 86 L36 74 L24 66 L38 64 L40 50 L52 58 L64 50 L66 64 L80 66 L68 74 L74 86 L62 80 L54 92 L50 92Z"
-        fill="#22c55e"
+      {/* Inner ring - interlocking chain */}
+      <path 
+        d="M32 18 C24 18 18 24 18 32 C18 40 24 46 32 46 C40 46 46 40 46 32" 
+        stroke="#22c55e" 
+        strokeWidth="6" 
+        strokeLinecap="round"
+        fill="none"
       />
-      <path
-        d="M8 50 L20 42 L14 30 L26 36 L34 24 L36 38 L50 40 L42 52 L50 64 L36 62 L34 76 L26 64 L14 70 L20 58 L8 50Z"
-        fill="#22c55e"
-      />
-      <path
-        d="M92 50 L80 58 L86 70 L74 64 L66 76 L64 62 L50 60 L58 48 L50 36 L64 38 L66 24 L74 36 L86 30 L80 42 L92 50Z"
-        fill="#22c55e"
-      />
-      <circle cx="50" cy="50" r="10" fill="#166534" />
+      {/* Center diamond */}
+      <rect x="26" y="26" width="12" height="12" rx="2" fill="#22c55e" />
+      {/* Connection dots */}
+      <circle cx="32" cy="8" r="4" fill="#22c55e" />
+      <circle cx="32" cy="56" r="4" fill="#22c55e" />
+      <circle cx="8" cy="32" r="4" fill="#22c55e" />
+      <circle cx="56" cy="32" r="4" fill="#22c55e" />
     </svg>
   );
 }
