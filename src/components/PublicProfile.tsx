@@ -45,7 +45,7 @@ export function PublicProfile({ address }: PublicProfileProps) {
         </p>
         <Link
           href="/"
-          className="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-sm transition-colors"
+          className="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm transition-colors"
         >
           Buat Profile
         </Link>
@@ -74,12 +74,12 @@ export function PublicProfile({ address }: PublicProfileProps) {
           <img
             src={avatarUrl}
             alt={name}
-            className="w-20 h-20 rounded-full object-cover border-2 border-purple-500/30 mx-auto mb-4"
+            className="w-20 h-20 rounded-full object-cover border-2 border-green-500/30 mx-auto mb-4"
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-purple-600/20 border-2 border-purple-500/30 flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl text-purple-300">
+          <div className="w-20 h-20 rounded-full bg-green-600/20 border-2 border-green-500/30 flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl text-green-300">
               {name.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -145,7 +145,7 @@ export function PublicProfile({ address }: PublicProfileProps) {
         </div>
         <button
           onClick={copyLink}
-          className="px-4 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-sm font-medium transition-colors shrink-0"
+          className="px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm font-medium transition-colors shrink-0"
         >
           {copied ? "✓" : "Copy"}
         </button>
@@ -159,7 +159,7 @@ export function PublicProfile({ address }: PublicProfileProps) {
         <RitualLogo className="w-5 h-5" />
         <p className="text-xs text-gray-700">
           Powered by{" "}
-          <span className="text-purple-400">Ritual Bio</span>
+          <span className="text-green-400">Ritual Bio</span>
           {" "}on Ritual Chain
         </p>
       </div>

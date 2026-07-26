@@ -77,15 +77,27 @@ export function GlobeLogo({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
-// Ritual logo (endless knot / infinity symbol)
+// Ritual logo — green geometric interlocking endless knot
 export function RitualLogo({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="120" height="120" rx="24" fill="#1a1a2e" />
-      <path d="M60 20C40 20 25 35 25 55s15 35 35 35 35-15 35-35S80 20 60 20z" stroke="#a855f7" strokeWidth="3" fill="none" />
-      <path d="M60 30C45 30 35 42 35 55s10 25 25 25 25-10 25-25S75 30 60 30z" stroke="#22c55e" strokeWidth="3" fill="none" />
-      <path d="M45 55c0-8 7-15 15-15s15 7 15 15-7 15-15 15-15-7-15-15z" fill="#a855f7" opacity="0.6" />
-      <text x="60" y="62" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold" fontFamily="sans-serif">R</text>
+    <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M50 8 L58 20 L70 14 L64 26 L76 34 L62 36 L60 50 L48 42 L36 50 L34 36 L20 34 L32 26 L26 14 L38 20 L46 8 L50 8Z"
+        fill="#22c55e"
+      />
+      <path
+        d="M50 92 L42 80 L30 86 L36 74 L24 66 L38 64 L40 50 L52 58 L64 50 L66 64 L80 66 L68 74 L74 86 L62 80 L54 92 L50 92Z"
+        fill="#22c55e"
+      />
+      <path
+        d="M8 50 L20 42 L14 30 L26 36 L34 24 L36 38 L50 40 L42 52 L50 64 L36 62 L34 76 L26 64 L14 70 L20 58 L8 50Z"
+        fill="#22c55e"
+      />
+      <path
+        d="M92 50 L80 58 L86 70 L74 64 L66 76 L64 62 L50 60 L58 48 L50 36 L64 38 L66 24 L74 36 L86 30 L80 42 L92 50Z"
+        fill="#22c55e"
+      />
+      <circle cx="50" cy="50" r="10" fill="#166534" />
     </svg>
   );
 }
