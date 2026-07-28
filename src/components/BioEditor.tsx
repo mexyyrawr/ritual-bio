@@ -195,7 +195,7 @@ export function BioEditor() {
         <div className="mb-6"><RitualLogo className="w-16 h-16 mx-auto" /></div>
         <h1 className="text-3xl font-bold text-white">Ritual Bio</h1>
         <p className="text-gray-400 text-center max-w-md">
-          On-chain profile / Linktree untuk Ritual Chain. Satu link untuk semua socials lo.
+          On-chain profile / Linktree for Ritual Chain. One link for all your socials.
         </p>
         <button
           onClick={() => connect({ connector: connectors[0] })}
@@ -455,7 +455,7 @@ export function BioEditor() {
 
       {/* Disclaimer */}
       <p className="text-xs text-gray-700 mt-8 text-center">
-        ⚠️ Data disimpan on-chain di Ritual Chain. Gak bisa dihapus tanpa deleteProfile().
+        ⚠️ Data is stored on-chain on Ritual Chain. It cannot be deleted without calling deleteProfile().
       </p>
     </div>
   );

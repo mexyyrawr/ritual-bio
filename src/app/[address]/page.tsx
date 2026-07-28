@@ -61,7 +61,7 @@ export default function ProfilePage() {
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
         <div className="text-6xl">❌</div>
         <h1 className="text-2xl font-bold text-white">Invalid Address</h1>
-        <p className="text-gray-400">Address tidak valid.</p>
+        <p className="text-gray-400">Invalid address.</p>
       </div>
     );
   }
@@ -80,7 +80,7 @@ export default function ProfilePage() {
         <div className="text-6xl">❌</div>
         <h1 className="text-2xl font-bold text-white">Profile Not Found</h1>
         <p className="text-gray-400">
-          Username &quot;{rawParam}&quot; tidak ditemukan.
+          Username &quot;{rawParam}&quot; not found.
         </p>
       </div>
     );

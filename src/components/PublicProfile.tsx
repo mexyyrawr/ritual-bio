@@ -41,7 +41,7 @@ export function PublicProfile({ address }: PublicProfileProps) {
         <div className="text-6xl">😕</div>
         <h1 className="text-2xl font-bold text-white">Profile Not Found</h1>
         <p className="text-gray-400">
-          {address.slice(0, 6)}...{address.slice(-4)} belum punya profile.
+          {address.slice(0, 6)}...{address.slice(-4)} doesn't have a profile yet.
         </p>
         <Link
           href="/"
@@ -134,7 +134,7 @@ export function PublicProfile({ address }: PublicProfileProps) {
 
         {/* Updated */}
         <p className="text-xs text-gray-600 mt-6">
-          Updated: {date.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+          Updated: {date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
         </p>
       </div>
 
@@ -151,7 +151,7 @@ export function PublicProfile({ address }: PublicProfileProps) {
         </button>
       </div>
       <p className="text-xs text-gray-600 mt-1 text-center">
-        Tempel link ini di bio social media lo 🔗
+        Paste this link in your social media bio 🔗
       </p>
 
       {/* Footer with Ritual logo */}

@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Ritual Bio — On-chain Profile",
-  description: "On-chain profile / Linktree untuk Ritual Chain",
+  description: "On-chain profile / Linktree for Ritual Chain",
   icons: {
     icon: "/favicon.png",
     shortcut: "/favicon.png",
