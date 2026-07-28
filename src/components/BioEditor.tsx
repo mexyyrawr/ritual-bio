@@ -312,7 +312,7 @@ export function BioEditor() {
 
         {/* Username */}
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Username (optional)</label>
+          <label className="block text-sm text-gray-400 mb-1">Username (for your profile link)</label>
           <div className="relative">
             <input
               type="text"
