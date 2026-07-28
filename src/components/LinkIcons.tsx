@@ -77,34 +77,15 @@ export function GlobeLogo({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
-// Ritual logo — endless knot / interlocking chain pattern
+// Ritual logo — official hexagonal interlocking knot (from user-provided PNG)
 export function RitualLogo({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Outer ring - interlocking chain */}
-      <path 
-        d="M32 8 C18 8 8 18 8 32 C8 46 18 56 32 56 C46 56 56 46 56 32" 
-        stroke="#22c55e" 
-        strokeWidth="6" 
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Inner ring - interlocking chain */}
-      <path 
-        d="M32 18 C24 18 18 24 18 32 C18 40 24 46 32 46 C40 46 46 40 46 32" 
-        stroke="#22c55e" 
-        strokeWidth="6" 
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Center diamond */}
-      <rect x="26" y="26" width="12" height="12" rx="2" fill="#22c55e" />
-      {/* Connection dots */}
-      <circle cx="32" cy="8" r="4" fill="#22c55e" />
-      <circle cx="32" cy="56" r="4" fill="#22c55e" />
-      <circle cx="8" cy="32" r="4" fill="#22c55e" />
-      <circle cx="56" cy="32" r="4" fill="#22c55e" />
-    </svg>
+    <img
+      src="/ritual-logo.png"
+      alt="Ritual"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
