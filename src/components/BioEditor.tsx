@@ -7,11 +7,14 @@ import { getLinkIconComponent, getLinkLabel, RitualLogo } from "@/components/Lin
 import { uploadImage } from "@/lib/upload";
 import Link from "next/link";
 
+const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/;
+
 export function BioEditor() {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
 
+  const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -22,6 +25,10 @@ export function BioEditor() {
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [copied, setCopied] = useState(false);
+
+  // Username availability check state
+  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Read existing profile
   const { data: profile, refetch } = useReadContract({
@@ -35,8 +42,9 @@ export function BioEditor() {
   // Load existing profile into form
   useEffect(() => {
     if (profile) {
-      const [pName, pBio, pAvatarUrl, pLinks] = profile as unknown as [string, string, string, string[]];
-      if (pName) {
+      const [pUsername, pName, pBio, pAvatarUrl, pLinks] = profile as unknown as [string, string, string, string, string[]];
+      if (pName || pUsername) {
+        setUsername(pUsername || "");
         setName(pName);
         setBio(pBio);
         setAvatarUrl(pAvatarUrl || "");
@@ -44,6 +52,45 @@ export function BioEditor() {
       }
     }
   }, [profile]);
+
+  // Read contract: isUsernameAvailable
+  const { data: availableData } = useReadContract({
+    address: RITUAL_BIO_ADDRESS,
+    abi: RITUAL_BIO_ABI,
+    functionName: "isUsernameAvailable",
+    args: username && USERNAME_REGEX.test(username) ? [username] : undefined,
+    query: { enabled: !!username && USERNAME_REGEX.test(username) },
+  });
+
+  // Debounced username availability check
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (!username) {
+      setUsernameStatus("idle");
+      return;
+    }
+
+    const normalized = username.toLowerCase();
+
+    if (!USERNAME_REGEX.test(normalized)) {
+      setUsernameStatus("invalid");
+      return;
+    }
+
+    setUsernameStatus("checking");
+
+    debounceRef.current = setTimeout(() => {
+      // availableData is updated by useReadContract when args change
+      if (availableData !== undefined && availableData !== null) {
+        setUsernameStatus(availableData ? "available" : "taken");
+      }
+    }, 400);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [username, availableData]);
 
   // Write contract
   const { writeContract, data: txHash } = useWriteContract();
@@ -66,6 +113,17 @@ export function BioEditor() {
       return;
     }
 
+    // Validate username if provided
+    if (username && !USERNAME_REGEX.test(username.toLowerCase())) {
+      setErrorMsg("Username: 3-20 chars, lowercase a-z, 0-9, underscore");
+      return;
+    }
+
+    if (username && usernameStatus === "taken") {
+      setErrorMsg("Username is already taken");
+      return;
+    }
+
     setStatus("saving");
     setErrorMsg("");
 
@@ -76,7 +134,7 @@ export function BioEditor() {
         address: RITUAL_BIO_ADDRESS,
         abi: RITUAL_BIO_ABI,
         functionName: "setProfile",
-        args: [name.trim(), bio.trim(), avatarUrl.trim(), cleanLinks],
+        args: [username.trim().toLowerCase(), name.trim(), bio.trim(), avatarUrl.trim(), cleanLinks],
       },
       {
         onError: (err) => {
@@ -103,12 +161,14 @@ export function BioEditor() {
     setLinks(newLinks);
   };
 
+  // Determine profile slug: username if set, otherwise address
+  const profileSlug = username.trim() ? username.trim().toLowerCase() : address;
+  const profileUrl = `https://ritual-bio.vercel.app/${profileSlug}`;
+
   const copyProfileLink = () => {
-    if (address) {
-      navigator.clipboard.writeText(`https://ritual-bio.vercel.app/${address}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    navigator.clipboard.writeText(profileUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,7 +217,7 @@ export function BioEditor() {
         </h1>
         <div className="flex items-center gap-3">
           <Link
-            href={`/${address}`}
+            href={`/${profileSlug}`}
             className="text-xs text-green-400 hover:text-green-300"
           >
             View Public Profile →
@@ -176,7 +236,7 @@ export function BioEditor() {
         <div className="flex-1 min-w-0">
           <p className="text-xs text-green-300 mb-0.5">Your profile link</p>
           <p className="text-sm text-gray-300 truncate font-mono">
-            ritual-bio.vercel.app/{address?.slice(0, 6)}...{address?.slice(-4)}
+            ritual-bio.vercel.app/{profileSlug ? `${profileSlug.slice(0, 12)}${profileSlug.length > 12 ? "..." : ""}` : "..."}
           </p>
         </div>
         <button
@@ -248,6 +308,43 @@ export function BioEditor() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Username */}
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">Username (optional)</label>
+          <div className="relative">
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="tuan"
+              maxLength={20}
+              className="w-full p-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-500 focus:border-green-500 focus:outline-none transition-colors pr-10"
+            />
+            {/* Availability indicator */}
+            {usernameStatus === "available" && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-400 text-lg">✓</span>
+            )}
+            {usernameStatus === "taken" && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-400 text-lg">✕</span>
+            )}
+            {usernameStatus === "checking" && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">⏳</span>
+            )}
+          </div>
+          <p className="text-xs text-gray-600 mt-1">
+            3-20 chars, lowercase a-z, 0-9, underscore
+          </p>
+          {usernameStatus === "taken" && (
+            <p className="text-xs text-red-400 mt-1">❌ Username is already taken</p>
+          )}
+          {usernameStatus === "invalid" && (
+            <p className="text-xs text-red-400 mt-1">❌ Invalid format</p>
+          )}
+          {usernameStatus === "available" && (
+            <p className="text-xs text-green-400 mt-1">✓ Username is available!</p>
+          )}
         </div>
 
         {/* Name */}
@@ -323,7 +420,7 @@ export function BioEditor() {
         {/* Save Button */}
         <button
           onClick={handleSave}
-          disabled={status === "saving" || isConfirming || !name.trim()}
+          disabled={status === "saving" || isConfirming || !name.trim() || (!!username && usernameStatus === "taken") || (!!username && usernameStatus === "invalid")}
           className="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {status === "saving" || isConfirming

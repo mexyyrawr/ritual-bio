@@ -53,7 +53,7 @@ export function PublicProfile({ address }: PublicProfileProps) {
     );
   }
 
-  const [name, bio, avatarUrl, links, updatedAt] = profile as [string, string, string, string[], bigint];
+  const [username, name, bio, avatarUrl, links, updatedAt] = profile as unknown as [string, string, string, string, string[], bigint];
   const date = new Date(Number(updatedAt) * 1000);
   const showAvatar = avatarUrl && !imgError;
 
